@@ -1,5 +1,6 @@
 import boto3
 import json
+import os
 import sys
 
 from util import (
@@ -54,20 +55,30 @@ if __name__ == '__main__':
         sys.exit()
 
     lang_list = args[1:]
+    wd = os.path.dirname(__file__)
     try:
-        with open('./in/input.txt', mode='r') as in_f:
+        with open(os.path.join(wd, '../in/input.txt'), mode='r') as in_f:
             init_text = in_f.read()
 
         lang_code_dict = get_lang_code_dict()
         code_list = [lang_code_dict[elem] for elem in lang_list]
         result = retranslate(init_text, code_list)
         # 途中経過
-        with open(f'./tmp/tmp-{format_file_name()}.json', mode='w', encoding='utf-8') as out_f:
+        with open(
+            os.path.join(wd, f'../tmp/tmp-{format_file_name()}.json'),
+            mode='w',
+            encoding='utf-8'
+        ) as out_f:
             json.dump(result, out_f, indent=2, ensure_ascii=False)
 
         # 最終結果
-        with open(f'./out/result-{format_file_name()}.txt', mode='w', encoding='utf-8') as out_f:
+        with open(
+            os.path.join(wd, f'../out/result-{format_file_name()}.txt'),
+            mode='w',
+            encoding='utf-8'
+        ) as out_f:
             out_f.write(result[-1]['text'])
+
     except Exception:
         import traceback
         print(traceback.format_exc())

@@ -1,5 +1,6 @@
 import boto3
 import json
+import os
 import sys
 
 from util import (
@@ -10,15 +11,12 @@ from util import (
 client = boto3.client('translate')
 
 
-def retranslate(src='ja', via='en', cnt=0):
+def retranslate(init_text, src='ja', via='en', cnt=0):
     """
     入力ファイルの内容を指定の回数再翻訳する
     """
-    with open('./in/input.txt', mode='r') as in_f:
-        text = in_f.read()
-
     params = {
-        'text': text,
+        'text': init_text,
         'src': src,
         'via': via
     }
@@ -64,15 +62,17 @@ if __name__ == '__main__':
         print('Specify int number OR int number, source language and destination language.')
         sys.exit()
 
+    wd = os.path.dirname(__file__)
     try:
-        with open('./in/input.txt', mode='r') as in_f:
+        with open(os.path.join(wd, '../in/input.txt'), mode='r') as in_f:
             init_text = in_f.read()
 
         lang_code_dict = get_lang_code_dict()
         if len(args) == 2 and args[1].isdigit():
-            result = retranslate(cnt=int(args[1]))
+            result = retranslate(init_text, cnt=int(args[1]))
         elif len(args) == 4 and args[1].isdigit():
             result = retranslate(
+                init_text,
                 src=lang_code_dict[args[2]],
                 via=lang_code_dict[args[3]],
                 cnt=int(args[1])
@@ -82,12 +82,21 @@ if __name__ == '__main__':
             sys.exit()
 
         # 途中経過
-        with open(f'./tmp/tmp-{format_file_name()}.json', mode='w', encoding='utf-8') as out_f:
+        with open(
+            os.path.join(wd, f'../tmp/tmp-{format_file_name()}.json'),
+            mode='w',
+            encoding='utf-8'
+        ) as out_f:
             json.dump(result, out_f, indent=2, ensure_ascii=False)
 
         # 最終結果
-        with open(f'./out/result-{format_file_name()}.txt', mode='w', encoding='utf-8') as out_f:
+        with open(
+            os.path.join(wd, f'../out/result-{format_file_name()}.txt'),
+            mode='w',
+            encoding='utf-8'
+        ) as out_f:
             out_f.write(result[-1]['text'])
+
     except Exception:
         import traceback
         print(traceback.format_exc())
